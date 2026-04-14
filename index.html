@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Math Crossword - Smart Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://db.onlinewebfonts.com/c/69edf99e9ed7b2a7250f3236ba529593?family=Sulphur+Point" rel="stylesheet">
     <style>
+        * {
+            font-family: "Sulphur Point", Tahoma, sans-serif;
+        }
         :root { --cell-size: 52px; }
         .grid-cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; border-radius: 6px; transition: 0.2s; }
         .input-box { background: #334155; border: 2px dashed #64748b; cursor: pointer; color: transparent; }
@@ -17,6 +21,9 @@
         .empty { visibility: hidden; }
         .number-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: white; color: #1e293b; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; font-size: 1.2rem; }
         .number-btn.used { opacity: 0.15; pointer-events: none; transform: scale(0.9); }
+        
+        /* Modal Animation */
+        #leaderboard-modal { transition: opacity 0.3s ease; }
     </style>
 </head>
 <body class="bg-slate-900 text-white flex flex-col items-center min-h-screen p-4 select-none">
