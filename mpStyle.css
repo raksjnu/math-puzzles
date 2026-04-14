@@ -1,0 +1,17 @@
+* {
+            font-family: "Sulphur Point", Tahoma, sans-serif;
+        }
+        :root { --cell-size: 52px; }
+        .grid-cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; border-radius: 6px; transition: 0.2s; }
+        .input-box { background: #334155; border: 2px dashed #64748b; cursor: pointer; color: transparent; }
+        .input-box.selected { border: 2px solid #3b82f6; background: #1e293b; outline: none; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6); }
+        .filled { color: #60a5fa !important; background: #1e293b; border: 2px solid #3b82f6; }
+        .operator { color: #94a3b8; font-size: 1.3rem; }
+        .result-box { background: #059669; color: white; border-radius: 4px; }
+        .static-num { background: #475569; color: #f8fafc; }
+        .empty { visibility: hidden; }
+        .number-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: white; color: #1e293b; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; font-size: 1.2rem; }
+        .number-btn.used { opacity: 0.15; pointer-events: none; transform: scale(0.9); }
+        
+        /* Modal Animation */
+        #leaderboard-modal { transition: opacity 0.3s ease; }
