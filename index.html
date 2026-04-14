@@ -210,19 +210,33 @@
         }
 
         function logToGoogleSheets() {
-            const name = document.getElementById('player-name').value;
-            const today = new Date().toISOString().split('T')[0];
-            const params = new URLSearchParams();
-            params.append(ENTRIES.name, name);
-            params.append(ENTRIES.level, currentLevel);
-            params.append(ENTRIES.status, "Completed");
-            params.append(ENTRIES.date, today);
-            params.append(ENTRIES.rating, "5"); // Auto-rate 5 stars
-            params.append(ENTRIES.comments, "App Auto-Submit");
+    const name = document.getElementById('player-name').value;
+    const today = new Date().toISOString().split('T')[0];
+    const statusBox = document.getElementById('tracker-status');
+    
+    // Use FormData instead of URLSearchParams for better reliability
+    const body = new FormData();
+    body.append(ENTRIES.name, name);
+    body.append(ENTRIES.level, currentLevel);
+    body.append(ENTRIES.status, "Completed");
+    body.append(ENTRIES.date, today);
+    body.append(ENTRIES.rating, "5");
+    body.append(ENTRIES.comments, "App Auto-Submit");
 
-            fetch(`${FORM_BASE_URL}?${params.toString()}`, { method: "POST", mode: "no-cors" })
-            .then(() => { document.getElementById('tracker-status').innerHTML = `<span class="text-green-400">✅ Saved!</span>`; });
-        }
+    fetch(FORM_BASE_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: body // Sending data in the body is the "proper" way for Google Forms
+    })
+    .then(() => {
+        statusBox.innerHTML = `<span class="text-green-400">✅ Saved!</span>`;
+        console.log("Stats successfully sent for " + name);
+    })
+    .catch(err => {
+        statusBox.innerText = "❌ Sync Error";
+        console.error("Submission failed:", err);
+    });
+}
 
         window.onload = () => {
             const select = document.getElementById('player-name');
