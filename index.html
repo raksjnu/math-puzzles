@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Math Crossword - Hall of Fame Edition</title>
+    <title>Pro Math Crossword - Smart Logic</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://db.onlinewebfonts.com/c/69edf99e9ed7b2a7250f3236ba529593?family=Sulphur+Point" rel="stylesheet">
     <style>
-        * {
-            font-family: "Sulphur Point", Tahoma, sans-serif;
-        }
         :root { --cell-size: 52px; }
         .grid-cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; border-radius: 6px; transition: 0.2s; }
         .input-box { background: #334155; border: 2px dashed #64748b; cursor: pointer; color: transparent; }
@@ -21,9 +17,6 @@
         .empty { visibility: hidden; }
         .number-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: white; color: #1e293b; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; font-size: 1.2rem; }
         .number-btn.used { opacity: 0.15; pointer-events: none; transform: scale(0.9); }
-        
-        /* Modal Animation */
-        #leaderboard-modal { transition: opacity 0.3s ease; }
     </style>
 </head>
 <body class="bg-slate-900 text-white flex flex-col items-center min-h-screen p-4 select-none">
@@ -33,29 +26,28 @@
     <div class="bg-slate-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center shadow-lg border border-slate-700">
         <div class="flex items-center gap-2">
             <label class="font-bold text-blue-400">Player:</label>
-            <select id="player-name" class="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none">
+            <select id="player-name" onchange="checkNewPlayer(this.value)" class="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none">
                 <option value="Reyansh">Reyansh</option>
                 <option value="Saanvi">Saanvi</option>
                 <option value="Rakesh">Rakesh</option>
                 <option value="Neha">Neha</option>
+                <option value="ADD_NEW">+ Add New Player...</option>
             </select>
         </div>
         <div class="h-6 w-px bg-slate-600 hidden md:block"></div>
-        <div id="tracker-status" class="text-sm text-slate-400 font-medium">Select a level to start tracking</div>
+        <div id="tracker-status" class="text-sm text-slate-400 font-medium">Ready!</div>
     </div>
 
     <div class="mb-8 flex flex-wrap justify-center gap-3">
         <button onclick="initGame('Easy')" class="bg-green-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Easy (2nd)</button>
         <button onclick="initGame('Medium')" class="bg-blue-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Medium (4th)</button>
         <button onclick="initGame('Hard')" class="bg-red-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Hard (Linked)</button>
-        
-        <button onclick="toggleLeaderboard(true)" class="bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-bold shadow-lg text-slate-900 flex items-center gap-2 transition-colors">
+        <button onclick="toggleLeaderboard(true)" class="bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-bold shadow-lg text-slate-900 flex items-center gap-2">
             <span>📊</span> View Results
         </button>
     </div>
 
     <div id="game-board" class="grid grid-cols-7 gap-2 bg-slate-800 p-6 rounded-2xl shadow-2xl mb-8 border border-slate-700"></div>
-
     <div class="text-slate-500 mb-4 uppercase tracking-widest text-xs font-bold">Number Bank</div>
     <div id="number-bank" class="flex flex-wrap gap-3 justify-center max-w-xl min-h-[60px]"></div>
     <div id="message" class="mt-8 text-2xl font-bold text-yellow-400 h-10 text-center"></div>
@@ -63,75 +55,57 @@
     <div id="leaderboard-modal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-slate-800 w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
             <div class="p-4 bg-slate-700 flex justify-between items-center">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl">🏆</span>
-                    <h2 class="text-xl font-bold text-amber-400">Math Puzzle Hall of Fame</h2>
-                </div>
-                <button onclick="toggleLeaderboard(false)" class="bg-slate-600 hover:bg-red-500 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                <h2 class="text-xl font-bold text-amber-400">🏆 Hall of Fame</h2>
+                <button onclick="toggleLeaderboard(false)" class="bg-slate-600 hover:bg-red-500 w-10 h-10 rounded-full flex items-center justify-center">
                     <span class="text-2xl font-bold">&times;</span>
                 </button>
             </div>
             <div class="h-[60vh] md:h-[500px] w-full bg-white">
-                <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTEQCZtUpuBTco0NcCT5HWCioaR_3HDt-j6wEoxHS_5E27Sq78hnYCJbt_pHHZg1st5vODMkSpnNPtE/pubhtml?widget=true&headers=false" 
-                        class="w-full h-full border-none"></iframe>
-            </div>
-            <div class="p-3 bg-slate-900 text-center text-xs text-slate-500">
-                Sheet updates automatically every few minutes.
+                <iframe id="leaderboard-frame" src="" class="w-full h-full border-none"></iframe>
             </div>
         </div>
     </div>
 
     <script>
-        // --- GOOGLE FORM CONFIGURATION ---
         const FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLScF5Q8TmATW8PtZaXbO78Gxkovk6Z718XuPQyrWWpurVg_zhw/formResponse";
-        const ENTRIES = {
-            name: "entry.1684950122",
-            level: "entry.2055289492",
-            status: "entry.2133802806"
-        };
+        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEQCZtUpuBTco0NcCT5HWCioaR_3HDt-j6wEoxHS_5E27Sq78hnYCJbt_pHHZg1st5vODMkSpnNPtE/pubhtml?widget=true&headers=false";
+        const ENTRIES = { name: "entry.1684950122", level: "entry.2055289492", status: "entry.2133802806" };
 
-        let selectedBox = null;
-        let solutionMap = {};
-        let currentLevel = '';
+        let selectedBox = null, solutionMap = {}, currentLevel = '';
         const GRID_SIZE = 7;
+
+        function checkNewPlayer(val) {
+            if (val === 'ADD_NEW') {
+                const name = prompt("Enter new player name:");
+                if (name && name.trim()) {
+                    const cleanName = name.trim();
+                    const select = document.getElementById('player-name');
+                    select.add(new Option(cleanName, cleanName), select.options[select.options.length - 1]);
+                    select.value = cleanName;
+                    const custom = JSON.parse(localStorage.getItem('math_players') || '[]');
+                    custom.push(cleanName);
+                    localStorage.setItem('math_players', JSON.stringify(custom));
+                } else { document.getElementById('player-name').value = 'Reyansh'; }
+            }
+        }
 
         function toggleLeaderboard(show) {
             const modal = document.getElementById('leaderboard-modal');
-            modal.classList.toggle('hidden', !show);
-        }
-
-        function logToGoogleSheets() {
-            const name = document.getElementById('player-name').value;
-            const statusBox = document.getElementById('tracker-status');
-            
-            const params = new URLSearchParams();
-            params.append(ENTRIES.name, name);
-            params.append(ENTRIES.level, currentLevel);
-            params.append(ENTRIES.status, "Completed");
-
-            fetch(`${FORM_BASE_URL}?${params.toString()}`, {
-                method: "POST",
-                mode: "no-cors"
-            }).then(() => {
-                statusBox.innerHTML = `<span class="text-green-400">✅ Success! Check the Hall of Fame, ${name}!</span>`;
-            }).catch(() => {
-                statusBox.innerText = "❌ Connection Error";
-            });
+            const iframe = document.getElementById('leaderboard-frame');
+            if (show) {
+                iframe.src = SHEET_URL + "&t=" + new Date().getTime();
+                modal.classList.remove('hidden');
+            } else { modal.classList.add('hidden'); }
         }
 
         function initGame(level) {
             currentLevel = level;
             const board = document.getElementById('game-board');
-            const bank = document.getElementById('number-bank');
-            const statusBox = document.getElementById('tracker-status');
-            
             board.innerHTML = '';
-            bank.innerHTML = '';
+            document.getElementById('number-bank').innerHTML = '';
             document.getElementById('message').innerText = '';
-            statusBox.innerText = `Tracking: ${level} Mode`;
-            
-            solutionMap = {};
-            selectedBox = null;
+            document.getElementById('tracker-status').innerText = `Tracking: ${level} Mode`;
+            solutionMap = {}; selectedBox = null;
 
             for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
                 let cell = document.createElement('div');
@@ -139,94 +113,106 @@
                 cell.className = 'grid-cell empty';
                 board.appendChild(cell);
             }
-
             generateLinkedPath(level);
         }
 
+        // --- NEW SMART MATH LOGIC ---
         function generateLinkedPath(level) {
             let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/'];
             let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 9;
-            let hiddenNumbers = [];
+            let hidden = [], cx = 0, cy = 0;
             
-            let currentX = 0;
-            let currentY = 0;
-            let currentValue = Math.floor(Math.random() * 10) + 2;
-
-            placeCell(currentY, currentX, currentValue, false);
+            // Start with a reasonable first number
+            let currentVal = Math.floor(Math.random() * 10) + 5;
+            placeCell(cy, cx, currentVal, false);
 
             for (let step = 0; step < maxSteps; step++) {
-                let direction = Math.random() > 0.5 ? 'H' : 'V';
-                let op = ops[Math.floor(Math.random() * ops.length)];
-                
-                if (direction === 'H' && currentX > 2) direction = 'V';
-                if (direction === 'V' && currentY > 2) direction = 'H';
+                let dir = Math.random() > 0.5 ? 'H' : 'V';
+                if (dir === 'H' && cx > 2) dir = 'V';
+                if (dir === 'V' && cy > 2) dir = 'H';
 
-                let b = (op === 'x' || op === '/') ? Math.floor(Math.random() * 5) + 2 : Math.floor(Math.random() * 12) + 1;
-                
-                if (op === '/') {
-                    currentValue = b * (Math.floor(Math.random() * 5) + 1);
-                    placeCell(currentY, currentX, currentValue, false);
+                // Try to find a valid equation
+                let foundValid = false;
+                let attempts = 0;
+                let op, b, res;
+
+                while (!foundValid && attempts < 50) {
+                    op = ops[Math.floor(Math.random() * ops.length)];
+                    b = Math.floor(Math.random() * (level === 'Easy' ? 15 : 10)) + 1;
+                    
+                    if (op === '+') res = currentVal + b;
+                    if (op === '-') { 
+                        if (currentVal > b) res = currentVal - b;
+                        else continue; 
+                    }
+                    if (op === 'x') res = currentVal * b;
+                    if (op === '/') {
+                        if (currentVal % b === 0 && currentVal !== 0) res = currentVal / b;
+                        else continue;
+                    }
+
+                    // Avoid excessively large numbers for kids
+                    if (res > (level === 'Easy' ? 50 : 250) || res < 1) {
+                        attempts++;
+                        continue;
+                    }
+
+                    foundValid = true;
                 }
-                if (op === '-' && currentValue < b) [currentValue, b] = [b, currentValue];
 
-                let result = eval(`${currentValue} ${op.replace('x','*')} ${b}`);
-                let displayOp = op === 'x' ? '×' : (op === '/' ? '÷' : op);
+                if (!foundValid) break;
 
-                if (direction === 'H') {
-                    placeCell(currentY, currentX + 1, displayOp, false, 'operator');
-                    placeCell(currentY, currentX + 2, b, true, 'input-box', hiddenNumbers);
-                    placeCell(currentY, currentX + 3, '=', false, 'operator');
-                    placeCell(currentY, currentX + 4, result, false, 'result-box');
-                    currentX += 4;
+                let dOp = op === 'x' ? '×' : (op === '/' ? '÷' : op);
+                if (dir === 'H') {
+                    placeCell(cy, cx+1, dOp, false, 'operator');
+                    placeCell(cy, cx+2, b, true, 'input-box', hidden);
+                    placeCell(cy, cx+3, '=', false, 'operator');
+                    placeCell(cy, cx+4, res, false, 'result-box');
+                    cx += 4;
                 } else {
-                    placeCell(currentY + 1, currentX, displayOp, false, 'operator');
-                    placeCell(currentY + 2, currentX, b, true, 'input-box', hiddenNumbers);
-                    placeCell(currentY + 3, currentX, '=', false, 'operator');
-                    placeCell(currentY + 4, currentX, result, false, 'result-box');
-                    currentY += 4;
+                    placeCell(cy+1, cx, dOp, false, 'operator');
+                    placeCell(cy+2, cx, b, true, 'input-box', hidden);
+                    placeCell(cy+3, cx, '=', false, 'operator');
+                    placeCell(cy+4, cx, res, false, 'result-box');
+                    cy += 4;
                 }
-                currentValue = result;
+                currentVal = res;
             }
-            renderBank(hiddenNumbers);
+            renderBank(hidden);
         }
 
-        function placeCell(r, c, val, isHidden, type = 'static-num', bank = []) {
+        function placeCell(r, c, v, h, type = 'static-num', bank = []) {
             let idx = r * GRID_SIZE + c;
             if (idx >= GRID_SIZE * GRID_SIZE) return;
             let cell = document.getElementById(`c-${idx}`);
             cell.classList.remove('empty');
-            cell.innerText = val;
-            
-            if (isHidden) {
+            cell.innerText = v;
+            if (h) {
                 cell.className = 'grid-cell input-box';
                 cell.onclick = () => {
                     if (selectedBox) document.getElementById(selectedBox).classList.remove('selected');
                     selectedBox = cell.id;
                     cell.classList.add('selected');
                 };
-                solutionMap[cell.id] = val;
-                bank.push(val);
-            } else {
-                cell.className = `grid-cell ${type}`;
-            }
+                solutionMap[cell.id] = v; bank.push(v);
+            } else { cell.className = `grid-cell ${type}`; }
         }
 
         function renderBank(nums) {
             const container = document.getElementById('number-bank');
             nums.sort(() => Math.random() - 0.5).forEach((n) => {
                 let btn = document.createElement('div');
-                btn.className = 'number-btn';
-                btn.innerText = n;
+                btn.className = 'number-btn'; btn.innerText = n;
                 btn.onclick = () => {
                     if (!selectedBox) return;
                     let target = document.getElementById(selectedBox);
                     if (parseInt(n) === solutionMap[selectedBox]) {
-                        target.innerText = n;
-                        target.classList.add('filled');
-                        target.onclick = null;
-                        btn.classList.add('used');
-                        selectedBox = null;
-                        checkWin();
+                        target.innerText = n; target.classList.add('filled');
+                        btn.classList.add('used'); selectedBox = null;
+                        if (!document.querySelectorAll('.number-btn:not(.used)').length) {
+                            document.getElementById('message').innerText = "✨ Awesome! ✨";
+                            logToGoogleSheets();
+                        }
                     } else {
                         target.classList.add('bg-red-900');
                         setTimeout(() => target.classList.remove('bg-red-900'), 400);
@@ -236,15 +222,26 @@
             });
         }
 
-        function checkWin() {
-            if (!document.querySelectorAll('.number-btn:not(.used)').length) {
-                document.getElementById('message').innerHTML = "✨ Awesome! Path Complete! ✨";
-                logToGoogleSheets();
-            }
+        function logToGoogleSheets() {
+            const name = document.getElementById('player-name').value;
+            const params = new URLSearchParams();
+            params.append(ENTRIES.name, name);
+            params.append(ENTRIES.level, currentLevel);
+            params.append(ENTRIES.status, "Completed");
+            fetch(`${FORM_BASE_URL}?${params.toString()}`, { method: "POST", mode: "no-cors" })
+            .then(() => { document.getElementById('tracker-status').innerHTML = `<span class="text-green-400">✅ Saved!</span>`; });
         }
 
-        // Start Default
-        initGame('Easy');
+        window.onload = () => {
+            const select = document.getElementById('player-name');
+            const custom = JSON.parse(localStorage.getItem('math_players') || '[]');
+            custom.forEach(name => {
+                if (![...select.options].some(opt => opt.value === name)) {
+                    select.add(new Option(name, name), select.options[select.options.length - 1]);
+                }
+            });
+            initGame('Easy');
+        };
     </script>
 </body>
 </html>
