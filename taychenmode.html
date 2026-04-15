@@ -123,7 +123,7 @@
         }
 
         function generateLinkedPath(level) {
-            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/'];
+            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/', '<', '>', '%'];
             let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 9;
             let hidden = [], cx = 0, cy = 0;
             let currentVal = Math.floor(Math.random() * 10) + 5;
@@ -145,6 +145,7 @@
                     if (res > (level === 'Easy' ? 50 : 250) || res < 1) { attempts++; continue; }
                     if (op === '>') res = currentVal > b;
                     if (op === '<') res = currentVal < b;
+                    if (op === '%') res = currentVal % b;
                     foundValid = true;
                 }
                 if (!foundValid) break;
