@@ -3,99 +3,386 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Math Crossword - Smart Logic</title>
+    <title>Pro Math Crossword | Premium Math Logic</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        heading: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f5f3ff',
+                            100: '#ede9fe',
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            700: '#6d28d9',
+                            800: '#5b21b6',
+                            900: '#4c1d95',
+                        },
+                        accent: '#f59e0b',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { --cell-size: 52px; }
-        .grid-cell { width: var(--cell-size); height: var(--cell-size); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; border-radius: 6px; transition: 0.2s; }
-        .input-box { background: #334155; border: 2px dashed #64748b; cursor: pointer; color: transparent; }
-        .input-box.selected { border: 2px solid #3b82f6; background: #1e293b; outline: none; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6); }
-        .filled { color: #60a5fa !important; background: #1e293b; border: 2px solid #3b82f6; }
-        .operator { color: #94a3b8; font-size: 1.3rem; }
-        .result-box { background: #059669; color: white; border-radius: 4px; }
-        .static-num { background: #475569; color: #f8fafc; }
+        :root { --cell-size: 42px; }
+        body {
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .grid-cell { 
+            width: var(--cell-size); 
+            height: var(--cell-size); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600; 
+            font-size: 1.25rem; 
+            border-radius: 12px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-box { 
+            background: rgba(30, 41, 59, 0.5); 
+            border: 2px dashed rgba(148, 163, 184, 0.3); 
+            cursor: pointer; 
+            color: transparent; 
+        }
+        .input-box:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .input-box.selected { 
+            border: 2px solid #8b5cf6; 
+            background: rgba(139, 92, 246, 0.2); 
+            outline: none; 
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4); 
+            transform: scale(1.05);
+        }
+        .filled { 
+            color: #ffffff !important; 
+            background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+            border: none;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+            color: transparent; /* initially hidden text for animation */
+        }
+        .filled-reveal {
+            color: white !important;
+        }
+        .operator { color: #94a3b8; font-size: 1.4rem; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .result-box { 
+            background: linear-gradient(135deg, #059669, #10b981); 
+            color: white; 
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .static-num { background: rgba(71, 85, 105, 0.4); color: #f1f5f9; }
         .empty { visibility: hidden; }
-        .number-btn { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: white; color: #1e293b; border-radius: 8px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 0 #cbd5e1; font-size: 1.2rem; }
-        .number-btn.used { opacity: 0.15; pointer-events: none; transform: scale(0.9); }
+        .number-btn { 
+            width: 54px; 
+            height: 54px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            background: white; 
+            color: #1e1b4b; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #cbd5e1;
+            font-size: 1.3rem; 
+        }
+        .number-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #cbd5e1;
+            background: #f8fafc;
+        }
+        .number-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0 #cbd5e1;
+        }
+        .number-btn.used { 
+            opacity: 0; 
+            pointer-events: none; 
+            transform: scale(0.5); 
+        }
+        
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+        /* Support for 13-column grid which is not default in Tailwind */
+        .grid-cols-13 { grid-template-columns: repeat(13, minmax(0, 1fr)); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+            background: rgba(139, 92, 246, 0.3); 
+            border-radius: 10px; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
     </style>
 </head>
-<body class="bg-slate-900 text-white flex flex-col items-center min-h-screen p-4 select-none">
+<body class="flex flex-col items-center min-h-screen p-4 select-none">
 
-    <h1 class="text-3xl font-bold mb-6">Pro Math Crossword</h1>
-    
-    <div class="bg-slate-800 p-4 rounded-xl mb-6 flex flex-wrap gap-4 items-center shadow-lg border border-slate-700">
-        <div class="flex items-center gap-2">
-            <label class="font-bold text-blue-400">Player:</label>
-            <select id="player-name" onchange="checkNewPlayer(this.value)" class="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none">
-                <option value="Reyansh">Reyansh</option>
-                <option value="Saanvi">Saanvi</option>
-                <option value="Rakesh">Rakesh</option>
-                <option value="Neha">Neha</option>
-                <option value="ADD_NEW">+ Add New Player...</option>
-            </select>
+    <div class="w-full max-w-4xl flex flex-col items-center">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-heading font-bold mb-2 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-indigo-300">
+                Pro Math Crossword
+            </h1>
+            <p class="text-slate-400 font-light">Train your brain with logic and numbers</p>
+        </header>
+        
+        <div class="glass w-full max-w-2xl px-6 py-4 rounded-3xl mb-8 flex flex-wrap gap-6 items-center justify-between shadow-2xl">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-brand-600 flex items-center justify-center text-xl shadow-inner">👤</div>
+                <div class="flex flex-col">
+                    <span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Player Name</span>
+                    <div class="flex items-center gap-2">
+                        <select id="player-name" 
+                                onfocus="this.dataset.prev = this.value" 
+                                onchange="this.dataset.prev = this.value" 
+                                class="bg-transparent text-lg font-semibold text-white focus:outline-none cursor-pointer">
+                            <option value="Reyansh" class="bg-slate-800">Reyansh</option>
+                            <option value="Saanvi" class="bg-slate-800">Saanvi</option>
+                            <option value="Rakesh" class="bg-slate-800">Rakesh</option>
+                            <option value="Neha" class="bg-slate-800">Neha</option>
+                        </select>
+                        <button onclick="addNewPlayer()" class="w-8 h-8 rounded-lg bg-brand-500 hover:bg-brand-400 flex items-center justify-center text-xl font-bold transition-all shadow-lg active:scale-90" title="Add New Player">+</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tracker-status-container" class="flex items-center gap-3 bg-slate-900/50 px-4 py-2 rounded-2xl border border-white/5">
+                <div id="status-dot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div id="tracker-status" class="text-sm font-medium text-slate-300">Ready to play</div>
+            </div>
         </div>
-        <div class="h-6 w-px bg-slate-600 hidden md:block"></div>
-        <div id="tracker-status" class="text-sm text-slate-400 font-medium">Ready!</div>
+
+        <div class="flex flex-wrap justify-center gap-4 mb-10">
+            <button onclick="initGame('Easy')" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-emerald-600 opacity-90 transition-all group-hover:bg-emerald-500"></div>
+                <span class="relative flex items-center gap-2">🌱 Easy</span>
+            </button>
+            <button onclick="initGame('Medium')" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-brand-600 opacity-90 transition-all group-hover:bg-brand-500"></div>
+                <span class="relative flex items-center gap-2">🧩 Medium</span>
+            </button>
+            <button onclick="initGame('Hard')" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-rose-600 opacity-90 transition-all group-hover:bg-rose-500"></div>
+                <span class="relative flex items-center gap-2">🔥 Hard</span>
+            </button>
+            <button onclick="toggleLeaderboard(true)" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-amber-500 opacity-90 transition-all group-hover:bg-amber-400"></div>
+                <span class="relative text-slate-950 flex items-center gap-2">📊 Results</span>
+            </button>
+        </div>
+
+        <div id="game-board-container" class="relative group">
+            <div id="game-board" class="grid grid-cols-13 gap-1 glass p-4 rounded-[32px] mb-10 border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)]"></div>
+        </div>
+
+        <div class="w-full max-w-xl text-center">
+            <h3 class="text-slate-500 uppercase tracking-[0.2em] text-[10px] font-bold mb-6">Available Numbers</h3>
+            <div id="number-bank" class="flex flex-wrap gap-4 justify-center min-h-[70px]"></div>
+        </div>
+
+        <div id="message" class="mt-12 text-4xl font-heading font-bold text-amber-400 h-16 text-center drop-shadow-lg"></div>
     </div>
 
-    <div class="mb-8 flex flex-wrap justify-center gap-3">
-        <button onclick="initGame('Easy')" class="bg-green-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Easy (2nd)</button>
-        <button onclick="initGame('Medium')" class="bg-blue-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Medium (4th)</button>
-        <button onclick="initGame('Hard')" class="bg-red-600 px-6 py-2 rounded-lg font-bold shadow-lg active:translate-y-1">Hard (Linked)</button>
-        <button onclick="toggleLeaderboard(true)" class="bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-bold shadow-lg text-slate-900 flex items-center gap-2">
-            <span>📊</span> View Results
-        </button>
-    </div>
-
-    <div id="game-board" class="grid grid-cols-7 gap-2 bg-slate-800 p-6 rounded-2xl shadow-2xl mb-8 border border-slate-700"></div>
-    <div class="text-slate-500 mb-4 uppercase tracking-widest text-xs font-bold">Number Bank</div>
-    <div id="number-bank" class="flex flex-wrap gap-3 justify-center max-w-xl min-h-[60px]"></div>
-    <div id="message" class="mt-8 text-2xl font-bold text-yellow-400 h-10 text-center"></div>
-
-    <div id="leaderboard-modal" class="fixed inset-0 bg-black/90 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-slate-800 w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col">
-            <div class="p-4 bg-slate-700 flex justify-between items-center">
-                <h2 class="text-xl font-bold text-amber-400">🏆 Hall of Fame</h2>
-                <button onclick="toggleLeaderboard(false)" class="bg-slate-600 hover:bg-red-500 w-10 h-10 rounded-full flex items-center justify-center">
-                    <span class="text-2xl font-bold">&times;</span>
+    <!-- Leaderboard Modal -->
+    <div id="leaderboard-modal" class="fixed inset-0 bg-slate-950/90 hidden z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="bg-slate-900 w-full max-w-6xl rounded-[40px] overflow-hidden shadow-2xl border border-white/10 flex flex-col">
+            <div class="p-6 bg-slate-800/50 flex justify-between items-center border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <span class="text-3xl">🏆</span>
+                    <h2 class="text-2xl font-heading font-bold text-white">Global Leaderboard</h2>
+                </div>
+                <button onclick="toggleLeaderboard(false)" class="bg-white/5 hover:bg-rose-500/20 hover:text-rose-400 w-12 h-12 rounded-2xl flex items-center justify-center transition-all">
+                    <span class="text-3xl font-light">&times;</span>
                 </button>
             </div>
-            <div class="h-[60vh] md:h-[500px] w-full bg-white">
-                <iframe id="leaderboard-frame" src="" class="w-full h-full border-none"></iframe>
+            <div class="h-[75vh] w-full relative overflow-y-auto px-6 py-4 custom-scrollbar">
+                <div id="loader" class="absolute inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm z-50">
+                    <div class="w-12 h-12 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+                <table class="w-full text-left border-separate border-spacing-y-3">
+                    <thead class="sticky top-0 z-20 bg-slate-900/80 backdrop-blur-md">
+                        <tr class="text-[12px] uppercase tracking-widest font-bold border-b border-white/5">
+                            <th class="px-4 py-4 text-slate-400">Timestamp</th>
+                            <th class="px-4 py-4 text-brand-400">Player</th>
+                            <th class="px-4 py-4 text-emerald-400">Level</th>
+                            <th class="px-4 py-3 text-center text-amber-500">Steps</th>
+                            <th class="px-4 py-4 text-blue-400">Note</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="text-base text-white">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
         const FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLScF5Q8TmATW8PtZaXbO78Gxkovk6Z718XuPQyrWWpurVg_zhw/formResponse";
-        const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEQCZtUpuBTco0NcCT5HWCioaR_3HDt-j6wEoxHS_5E27Sq78hnYCJbt_pHHZg1st5vODMkSpnNPtE/pubhtml?gid=0&single=true";
-        const ENTRIES = { name: "entry.1684950122", level: "entry.2055289492", status: "entry.2133802806" };
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/1UJBMC7iEvipYdm2HvMnAlU31SSwjtMeGoNhjmL7YF4E/gviz/tq?tqx=out:csv";
+        const ENTRIES = { 
+            name: "entry.1684950122", 
+            otherName: "entry.508429890",
+            level: "entry.2055289492", 
+            status: "entry.2133802806",
+            date: "entry.681189504",
+            enjoyment: "entry.2101198119",
+            note: "entry.1924981409"
+        };
 
-        let selectedBox = null, solutionMap = {}, currentLevel = '';
-        const GRID_SIZE = 7;
+        let selectedBox = null, solutionMap = {}, currentLevel = '', currentSteps = 0;
+        const GRID_SIZE = 13;
 
-        function checkNewPlayer(val) {
-            if (val === 'ADD_NEW') {
-                const name = prompt("Enter new player name:");
-                if (name && name.trim()) {
-                    const cleanName = name.trim();
-                    const select = document.getElementById('player-name');
-                    select.add(new Option(cleanName, cleanName), select.options[select.options.length - 1]);
+        function addNewPlayer() {
+            const name = prompt("Enter new player name:");
+            if (name && name.trim()) {
+                const cleanName = name.trim();
+                const select = document.getElementById('player-name');
+                if (![...select.options].some(opt => opt.value === cleanName)) {
+                    const newOpt = new Option(cleanName, cleanName);
+                    newOpt.className = "bg-slate-800";
+                    select.add(newOpt);
                     select.value = cleanName;
                     const custom = JSON.parse(localStorage.getItem('math_players') || '[]');
                     custom.push(cleanName);
                     localStorage.setItem('math_players', JSON.stringify(custom));
-                } else { document.getElementById('player-name').value = 'Reyansh'; }
+                } else {
+                    select.value = cleanName;
+                }
             }
         }
 
+        function handleData(response) {
+            if (!response || !response.table) return;
+            const rows = response.table.rows;
+            
+            // Map rows (V is value property in GViz JSON)
+            const data = rows.map(r => r.c.map(cell => {
+                if (!cell) return null;
+                return (cell.v !== null && cell.v !== undefined) ? (cell.f || cell.v) : null;
+            }));
+            
+            // Sort by Timestamp DESC
+            data.sort((a,b) => new Date(b[0]) - new Date(a[0]));
+
+            // 1. Render Leaderboard
+            const body = document.getElementById('leaderboard-body');
+            if (body) {
+                body.innerHTML = '';
+                data.forEach(row => {
+                    if (!row[0]) return;
+                    const tr = document.createElement('tr');
+                    tr.className = "bg-white/5 hover:bg-white/10 transition-colors group";
+                    
+                    // Unified Name Logic: Index 1 (NAME), Index 2 (If Other)
+                    const name = (row[2] && String(row[2]) !== "null" && String(row[2]).trim() !== "") ? row[2] : row[1];
+                    const level = row[3] || "Easy";
+                    const steps = row[6] || "-"; // Corrected index for Enjoyment/Steps
+                    const note = row[7] || ""; // Corrected index for Notes
+
+                    tr.innerHTML = `
+                        <td class="px-4 py-5 rounded-l-2xl text-slate-500 font-mono text-xs">${String(row[0]).split(' ')[0]}</td>
+                        <td class="px-4 py-5 font-bold text-white text-lg">${name}</td>
+                        <td class="px-4 py-5">
+                            <span class="px-3 py-1.5 rounded-lg bg-brand-500/20 text-brand-400 text-xs font-black uppercase tracking-wider">${level}</span>
+                        </td>
+                        <td class="px-4 py-5 text-center text-emerald-400 font-black text-xl">${steps}</td>
+                        <td class="px-4 py-5 rounded-r-2xl text-slate-400 text-sm italic font-medium">${note}</td>
+                    `;
+                    body.appendChild(tr);
+                });
+                document.getElementById('loader').style.display = 'none';
+            }
+
+            // 2. Sync Players to Dropdown
+            const select = document.getElementById('player-name');
+            if (select) {
+                const names = new Set(['Reyansh', 'Saanvi', 'Rakesh', 'Neha']); // Always start with defaults
+                
+                // Get local custom players too
+                const localCustom = JSON.parse(localStorage.getItem('math_players') || '[]');
+                localCustom.forEach(n => names.add(n));
+
+                // Add unique names from sheet (Top 50 entries)
+                data.slice(0, 50).forEach(row => {
+                    const name = (row[2] && String(row[2]) !== "null" && String(row[2]).trim() !== "") ? row[2] : row[1];
+                    if (name && String(name).trim() && name !== "NAME") names.add(String(name).trim());
+                });
+
+                const currentSelected = select.value;
+                select.innerHTML = '';
+                Array.from(names).forEach(name => {
+                    const opt = new Option(name, name);
+                    opt.className = "bg-slate-800";
+                    select.add(opt);
+                });
+                if ([...select.options].some(opt => opt.value === currentSelected)) {
+                    select.value = currentSelected;
+                }
+            }
+        }
+        
+        // Define handleData globally for the JSONP callback
+        window.handleData = handleData;
+
         function toggleLeaderboard(show) {
             const modal = document.getElementById('leaderboard-modal');
-            const iframe = document.getElementById('leaderboard-frame');
             if (show) {
-                iframe.src = SHEET_URL + "&t=" + new Date().getTime();
                 modal.classList.remove('hidden');
+                document.getElementById('loader').style.display = 'flex';
+                fetchSheetData();
             } else { modal.classList.add('hidden'); }
+        }
+
+        function fetchSheetData() {
+            const oldScript = document.getElementById('sheet-jsonp');
+            if (oldScript) oldScript.remove();
+            
+            const script = document.createElement('script');
+            script.id = 'sheet-jsonp';
+            // Use window.handleData as the callback
+            script.src = `https://docs.google.com/spreadsheets/d/1UJBMC7iEvipYdm2HvMnAlU31SSwjtMeGoNhjmL7YF4E/gviz/tq?tqx=responseHandler:window.handleData&tq=SELECT%20*%20&t=${new Date().getTime()}`;
+            script.onerror = () => {
+                console.error("CORS or Network Error prevented live sync.");
+                document.getElementById('loader').style.display = 'none';
+            };
+            document.body.appendChild(script);
         }
 
         function initGame(level) {
@@ -104,7 +391,8 @@
             board.innerHTML = '';
             document.getElementById('number-bank').innerHTML = '';
             document.getElementById('message').innerText = '';
-            document.getElementById('tracker-status').innerText = `Tracking: ${level} Mode`;
+            document.getElementById('tracker-status').innerText = `${level} Mode`;
+            document.getElementById('status-dot').className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
             solutionMap = {}; selectedBox = null;
 
             for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
@@ -116,67 +404,92 @@
             generateLinkedPath(level);
         }
 
-        // --- NEW SMART MATH LOGIC ---
         function generateLinkedPath(level) {
             let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/'];
-            let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 9;
-            let hidden = [], cx = 0, cy = 0;
+            let maxSteps = level === 'Easy' ? 8 : level === 'Medium' ? 24 : 48;
+            currentSteps = 0;
+            let hidden = [], cx = 6, cy = 6; // Start centered in 13x13
+            let occupied = new Set();
             
-            // Start with a reasonable first number
+            // Start node
             let currentVal = Math.floor(Math.random() * 10) + 5;
             placeCell(cy, cx, currentVal, false);
+            occupied.add(`${cy},${cx}`);
 
             for (let step = 0; step < maxSteps; step++) {
-                let dir = Math.random() > 0.5 ? 'H' : 'V';
-                if (dir === 'H' && cx > 2) dir = 'V';
-                if (dir === 'V' && cy > 2) dir = 'H';
+                let directions = [
+                    { dx: 4, dy: 0, path: [[0,1],[0,2],[0,3],[0,4]] }, // Right
+                    { dx: -4, dy: 0, path: [[0,-1],[0,-2],[0,-3],[0,-4]] }, // Left
+                    { dx: 0, dy: 4, path: [[1,0],[2,0],[3,0],[4,0]] }, // Down
+                    { dx: 0, dy: -4, path: [[-1,0],[-2,0],[-3,0],[-4,0]] } // Up
+                ];
 
-                // Try to find a valid equation
-                let foundValid = false;
-                let attempts = 0;
-                let op, b, res;
+                // Randomize directions order
+                directions.sort(() => Math.random() - 0.5);
 
-                while (!foundValid && attempts < 50) {
-                    op = ops[Math.floor(Math.random() * ops.length)];
-                    b = Math.floor(Math.random() * (level === 'Easy' ? 15 : 10)) + 1;
+                let moved = false;
+                for (let d of directions) {
+                    let nx = cx + d.dx, ny = cy + d.dy;
+                    if (nx < 0 || nx >= GRID_SIZE || ny < 0 || ny >= GRID_SIZE) continue;
+
+                    // Check if path is clear (intermediate cells can be empty, but target cannot be occupied)
+                    if (occupied.has(`${ny},${nx}`)) continue;
                     
-                    if (op === '+') res = currentVal + b;
-                    if (op === '-') { 
-                        if (currentVal > b) res = currentVal - b;
-                        else continue; 
-                    }
-                    if (op === 'x') res = currentVal * b;
-                    if (op === '/') {
-                        if (currentVal % b === 0 && currentVal !== 0) res = currentVal / b;
-                        else continue;
-                    }
-
-                    // Avoid excessively large numbers for kids
-                    if (res > (level === 'Easy' ? 50 : 250) || res < 1) {
-                        attempts++;
-                        continue;
+                    // Found a direction! Try to generate valid equation
+                    let foundValid = false, attempts = 0, op, b, res;
+                    while (!foundValid && attempts < 30) {
+                        op = ops[Math.floor(Math.random() * ops.length)];
+                        b = Math.floor(Math.random() * (level === 'Easy' ? 12 : 10)) + 1;
+                        if (op === '+') res = currentVal + b;
+                        else if (op === '-') { if (currentVal > b) res = currentVal - b; else { attempts++; continue; } }
+                        else if (op === 'x') { res = currentVal * b; if (res > (level === 'Medium' ? 100 : 250)) { attempts++; continue; } }
+                        else if (op === '/') { if (currentVal % b === 0 && currentVal !== 0) res = currentVal / b; else { attempts++; continue; } }
+                        if (res < 1 || res > 500) { attempts++; continue; }
+                        foundValid = true;
                     }
 
-                    foundValid = true;
+                    if (foundValid) {
+                        let dOp = op === 'x' ? '×' : (op === '/' ? '÷' : op);
+                        // Place intermediate cells
+                        placeCell(cy + d.path[0][0], cx + d.path[0][1], dOp, false, 'operator');
+                        placeCell(cy + d.path[1][0], cx + d.path[1][1], b, true, 'input-box', hidden);
+                        placeCell(cy + d.path[2][0], cx + d.path[2][1], '=', false, 'operator');
+                        placeCell(cy + d.path[3][0], cx + d.path[3][1], res, false, 'result-box');
+                        
+                        // Mark path occupied
+                        d.path.forEach(p => occupied.add(`${cy+p[0]},${cx+p[1]}`));
+                        cx = nx; cy = ny; currentVal = res;
+                        currentSteps++; moved = true;
+                        break;
+                    }
                 }
 
-                if (!foundValid) break;
-
-                let dOp = op === 'x' ? '×' : (op === '/' ? '÷' : op);
-                if (dir === 'H') {
-                    placeCell(cy, cx+1, dOp, false, 'operator');
-                    placeCell(cy, cx+2, b, true, 'input-box', hidden);
-                    placeCell(cy, cx+3, '=', false, 'operator');
-                    placeCell(cy, cx+4, res, false, 'result-box');
-                    cx += 4;
-                } else {
-                    placeCell(cy+1, cx, dOp, false, 'operator');
-                    placeCell(cy+2, cx, b, true, 'input-box', hidden);
-                    placeCell(cy+3, cx, '=', false, 'operator');
-                    placeCell(cy+4, cx, res, false, 'result-box');
-                    cy += 4;
+                if (!moved) {
+                    // Try to "jump" to a random result-box or start a completely new seed
+                    let results = Array.from(document.querySelectorAll('.result-box, .static-num:not(.operator)'))
+                                       .filter(el => !el.innerText.match(/[÷×+=-]/));
+                    
+                    if (results.length > 0 && Math.random() > 0.05) { // Maximum branching
+                        let target = results[Math.floor(Math.random() * results.length)];
+                        let coords = target.id.split('-')[1];
+                        cx = coords % GRID_SIZE;
+                        cy = Math.floor(coords / GRID_SIZE);
+                        currentVal = parseInt(target.innerText) || 5;
+                    } else if (level !== 'Easy' && step < maxSteps - 2) {
+                        // Start a fresh seed in an empty area
+                        for(let a=0; a<80; a++) {
+                            let tx = Math.floor(Math.random()*(GRID_SIZE-4));
+                            let ty = Math.floor(Math.random()*(GRID_SIZE-4));
+                            if (!occupied.has(`${ty},${tx}`)) {
+                                cx = tx; cy = ty;
+                                currentVal = Math.floor(Math.random()*15)+2;
+                                placeCell(cy, cx, currentVal, false);
+                                occupied.add(`${cy},${cx}`);
+                                break;
+                            }
+                        }
+                    } else break;
                 }
-                currentVal = res;
             }
             renderBank(hidden);
         }
@@ -200,47 +513,108 @@
 
         function renderBank(nums) {
             const container = document.getElementById('number-bank');
-            nums.sort(() => Math.random() - 0.5).forEach((n) => {
+            nums.sort(() => Math.random() - 0.5).forEach((n, i) => {
                 let btn = document.createElement('div');
-                btn.className = 'number-btn'; btn.innerText = n;
+                btn.className = 'number-btn animate-pop';
+                btn.style.animationDelay = `${i * 0.05}s`;
+                btn.innerText = n;
                 btn.onclick = () => {
                     if (!selectedBox) return;
                     let target = document.getElementById(selectedBox);
                     if (parseInt(n) === solutionMap[selectedBox]) {
-                        target.innerText = n; target.classList.add('filled');
-                        btn.classList.add('used'); selectedBox = null;
+                        target.innerText = n; 
+                        target.classList.add('filled', 'animate-pop');
+                        setTimeout(() => target.classList.add('filled-reveal'), 50);
+                        btn.classList.add('used'); 
+                        selectedBox = null;
                         if (!document.querySelectorAll('.number-btn:not(.used)').length) {
-                            document.getElementById('message').innerText = "✨ Awesome! ✨";
+                            document.getElementById('message').innerText = "✨ AWESOME! ✨";
                             logToGoogleSheets();
                         }
                     } else {
-                        target.classList.add('bg-red-900');
-                        setTimeout(() => target.classList.remove('bg-red-900'), 400);
+                        target.classList.add('bg-rose-900/50', 'border-rose-500');
+                        setTimeout(() => target.classList.remove('bg-rose-900/50', 'border-rose-500'), 500);
                     }
                 };
                 container.appendChild(btn);
             });
         }
 
-        function logToGoogleSheets() {
+        async function logToGoogleSheets() {
             const name = document.getElementById('player-name').value;
+            const statusIndicator = document.getElementById('tracker-status');
+            const statusDot = document.getElementById('status-dot');
+            
+            statusIndicator.innerText = "Saving progress...";
+            statusDot.className = "w-2 h-2 rounded-full bg-amber-500 animate-spin";
+
+            const now = new Date();
+            const defaults = ['Reyansh', 'Saanvi', 'Rakesh', 'Neha'];
+            let finalName = name;
+            let otherNameValue = "";
+            if (!defaults.includes(name)) {
+                finalName = "Other (Specify below)";
+                otherNameValue = name;
+            }
+
+            // CRITICAL: Rating field only accepts 1-5. Logic to scale or cap at 5.
+            const ratingValue = Math.min(5, Math.max(1, Math.floor(currentSteps / 5) || 5));
+
             const params = new URLSearchParams();
-            params.append(ENTRIES.name, name);
-            params.append(ENTRIES.level, currentLevel);
-            params.append(ENTRIES.status, "Completed");
-            fetch(`${FORM_BASE_URL}?${params.toString()}`, { method: "POST", mode: "no-cors" })
-            .then(() => { document.getElementById('tracker-status').innerHTML = `<span class="text-green-400">✅ Saved!</span>`; });
+            params.append("entry.1684950122", finalName);
+            params.append("entry.508429890", otherNameValue);
+            params.append("entry.2055289492", currentLevel);
+            params.append("entry.2133802806", "Completed");
+            params.append("entry.681189504_year", now.getFullYear());
+            params.append("entry.681189504_month", now.getMonth() + 1);
+            params.append("entry.681189504_day", now.getDate());
+            params.append("entry.2101198119", ratingValue);
+            params.append("entry.1924981409", "Steps: " + currentSteps);
+            params.append("fvv", "1");
+            params.append("pageHistory", "0");
+            params.append("fbzx", "-2500151926280693187");
+            params.append("submissionTimestamp", "-1");
+            params.append("submit", "Submit");
+
+            try {
+                // Using fetch with no-cors for maximum origin compatibility from file://
+                await fetch(FORM_BASE_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                });
+                setTimeout(() => {
+                    statusIndicator.innerHTML = `<span class="text-emerald-400 font-bold">✅ Saved Successfully!</span>`;
+                    statusDot.className = "w-2 h-2 rounded-full bg-emerald-500";
+                    submitted = false;
+                    // Trigger refresh if modal is open
+                    if (!document.getElementById('leaderboard-modal').classList.contains('hidden')) fetchSheetData();
+                }, 1500);
+            } catch (err) {
+                console.error("Save error:", err);
+                statusIndicator.innerHTML = `<span class="text-rose-400 font-bold">❌ Save Error</span>`;
+                statusDot.className = "w-2 h-2 rounded-full bg-rose-500";
+            }
         }
 
-        window.onload = () => {
+        window.onload = async () => {
             const select = document.getElementById('player-name');
-            const custom = JSON.parse(localStorage.getItem('math_players') || '[]');
-            custom.forEach(name => {
+            // Load local custom players first
+            const localCustom = JSON.parse(localStorage.getItem('math_players') || '[]');
+            localCustom.forEach(name => {
                 if (![...select.options].some(opt => opt.value === name)) {
-                    select.add(new Option(name, name), select.options[select.options.length - 1]);
+                    const opt = new Option(name, name);
+                    opt.className = "bg-slate-800";
+                    select.add(opt);
                 }
             });
+            
+            select.dataset.prev = select.value;
             initGame('Easy');
+
+            // Initial fetch to sync names
+            fetchSheetData();
         };
     </script>
 </body>
