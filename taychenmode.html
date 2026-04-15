@@ -30,6 +30,7 @@
             <label class="font-bold text-blue-400">Player:</label>
             <select id="player-name" onchange="checkNewPlayer(this.value)" class="bg-slate-700 p-2 rounded border border-slate-600 focus:outline-none">
                 <option value="default">Default</option>
+                <option value="taychenpreview">⚡ Taychen Preview</option>
                 <option value="ADD_NEW">Add a new player...</option>
             </select>
         </div>
@@ -124,7 +125,7 @@
         }
 
         function generateLinkedPath(level) {
-            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/', '<', '>', '%'];
+            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/', '%'];
             let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 9;
             let hidden = [], cx = 0, cy = 0;
             let currentVal = Math.floor(Math.random() * 10) + 5;
@@ -144,8 +145,6 @@
                     if (op === 'x') res = currentVal * b;
                     if (op === '/') { if (currentVal % b === 0 && currentVal !== 0) res = currentVal / b; else continue; }
                     if (res > (level === 'Easy' ? 50 : 250) || res < 1) { attempts++; continue; }
-                    if (op === '>') res = currentVal > b;
-                    if (op === '<') res = currentVal < b;
                     if (op === '%') res = currentVal % b;
                     foundValid = true;
                 }
