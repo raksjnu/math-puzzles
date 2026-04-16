@@ -204,6 +204,10 @@
                 <div class="absolute inset-0 bg-rose-600 opacity-90 transition-all group-hover:bg-rose-500"></div>
                 <span class="relative flex items-center gap-2">🔥 Hard</span>
             </button>
+            <button onclick="initGame('Impossible')" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
+                <div class="absolute inset-0 bg-red-600 opacity-90 transition-all group-hover:bg-red-500"></div>
+                <span class="relative flex items-center gap-2">😈 Impossible</span>
+            </button>
             <button onclick="toggleLeaderboard(true)" class="group relative px-6 py-3 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95 overflow-hidden">
                 <div class="absolute inset-0 bg-amber-500 opacity-90 transition-all group-hover:bg-amber-400"></div>
                 <span class="relative text-slate-950 flex items-center gap-2">📊 Results</span>
@@ -409,7 +413,7 @@
 
         function generateLinkedPath(level) {
             let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/'];
-            let maxSteps = level === 'Easy' ? 8 : level === 'Medium' ? 24 : 96;
+            let maxSteps = level === 'Easy' ? 8 : level === 'Medium' ? 24 : level === 'Hard' ? 96 : 192;
             currentSteps = 0;
             let hidden = [], cx = 6, cy = 6; // Start centered in 13x13
             let occupied = new Set();
