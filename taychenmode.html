@@ -42,6 +42,8 @@
         <button onclick="initGame('Easy')" class="bg-green-600 px-6 py-2 rounded-lg font-bold shadow-lg">Easy (2nd)</button>
         <button onclick="initGame('Medium')" class="bg-blue-600 px-6 py-2 rounded-lg font-bold shadow-lg">Medium (4th)</button>
         <button onclick="initGame('Hard')" class="bg-red-600 px-6 py-2 rounded-lg font-bold shadow-lg">Hard (Linked)</button>
+        <button onclick="initGame('Impossible')" class="bg-red-600 px-6 py-2 rounded-lg font-bold shadow-lg">Impossible</button>
+        <button onclick="initGame('Massive')" class="bg-red-600 px-6 py-2 rounded-lg font-bold shadow-lg">Massive (more impossible)</button>
         <button onclick="toggleLeaderboard(true)" class="bg-amber-500 hover:bg-amber-400 px-5 py-2 rounded-lg font-bold shadow-lg text-slate-900 flex items-center gap-2">
             <span>📊</span> View Results
         </button>
@@ -125,8 +127,8 @@
         }
 
         function generateLinkedPath(level) {
-            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/', '%'];
-            let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 9;
+            let ops = level === 'Easy' ? ['+', '-'] : ['+', '-', 'x', '/'];
+            let maxSteps = level === 'Easy' ? 4 : level === 'Medium' ? 6 : 'Hard' ? 96 : 'Impossible' ? 192 : 384;
             let hidden = [], cx = 0, cy = 0;
             let currentVal = Math.floor(Math.random() * 10) + 5;
             placeCell(cy, cx, currentVal, false);
@@ -145,7 +147,6 @@
                     if (op === 'x') res = currentVal * b;
                     if (op === '/') { if (currentVal % b === 0 && currentVal !== 0) res = currentVal / b; else continue; }
                     if (res > (level === 'Easy' ? 50 : 250) || res < 1) { attempts++; continue; }
-                    if (op === '%') res = currentVal % b;
                     foundValid = true;
                 }
                 if (!foundValid) break;
